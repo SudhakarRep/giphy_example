@@ -14,6 +14,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -31,7 +32,6 @@ public class HttpService {
 		    	    .setSocketTimeout(5000)
 		    	    .setConnectTimeout(5000)
 		    	    .setConnectionRequestTimeout(5000)
-		    	    .setStaleConnectionCheckEnabled(true)
 		    	    .build();
 	        
 	        CloseableHttpClient httpclient = HttpClients.custom()
@@ -46,11 +46,24 @@ public class HttpService {
 		return null;
 	}
 	
-	public Map<String,Object> getSearchData() { 
+	public Map<String,Object> getSearchData(String searchString) { 
+		return this.getData(searchString);
+	}
+	
+	public Map<String,Object> getSearchStaticData() { 
+		return this.getData(null);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Map<String,Object> getData(String searchString) { 
 		try { 
 			CloseableHttpClient httpclient = this.giphyConnect();
  			String url = "";
- 			url = "http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=hqxZtQVtC2c24Obu5maK6o3mZwIrgdFD&limit=20";
+ 			if (StringUtils.isEmpty(searchString)) {
+ 				url = "http://api.giphy.com/v1/gifs/search?q=ryan+gosling&api_key=hqxZtQVtC2c24Obu5maK6o3mZwIrgdFD&limit=20";
+ 			} else {
+ 				url = String.format("http://api.giphy.com/v1/gifs/search?q=%s&api_key=hqxZtQVtC2c24Obu5maK6o3mZwIrgdFD&limit=20", searchString.replace(" ", "+"));
+ 			}
  			HttpGet httpGet = new HttpGet(url);
  	 		httpGet.setHeader("Accept", "application/json");
  	 		httpGet.setHeader("Content-Type", "application/json");
@@ -60,7 +73,7 @@ public class HttpService {
 	 	        if (response !=null && response.getStatusLine().toString().contains("OK")) {
 	 	        	String responseBody = EntityUtils.toString(response.getEntity());
 	 	            ObjectMapper resultMap = new ObjectMapper();
-	 				Map<String,Object> resultMapObj = resultMap.readValue(responseBody, Map.class);
+	 				Map<String,Object> resultMapObj = resultMap.readValue(responseBody, Map.class); 
 	 				return resultMapObj;
  					
 	 	        }

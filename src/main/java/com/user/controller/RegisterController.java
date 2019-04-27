@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nulabinc.zxcvbn.Strength;
 import com.nulabinc.zxcvbn.Zxcvbn;
+import com.user.model.Search;
 import com.user.model.User;
 import com.user.service.EmailService;
 import com.user.service.HttpService;
@@ -52,7 +53,7 @@ public class RegisterController {
 		modelAndView.addObject("user", user);
 		
 		//Giphy API
-		Map<String, Object> resultMapObj =  httpService.getSearchData();
+		Map<String, Object> resultMapObj =  httpService.getSearchData(null);
 		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
 		
 		try {
@@ -80,11 +81,7 @@ public class RegisterController {
 		} catch (Exception ex) {
 			
 		}
-			 	       
-				
-				
-		
-		
+
 		modelAndView.setViewName("register");
 		return modelAndView;
 	}
@@ -206,7 +203,7 @@ public class RegisterController {
 		System.out.println("ID::"+id);
 		User user = userService.findById(id);
 		//Giphy API
-		Map<String, Object> resultMapObj =  httpService.getSearchData();
+		Map<String, Object> resultMapObj =  httpService.getSearchData(null);
 		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
 		
 		try {
@@ -240,6 +237,87 @@ public class RegisterController {
 		
 		
 		modelAndView.setViewName("edit_user");
+		return modelAndView;
+	}
+	
+	
+	
+	// Return registration form template
+	@RequestMapping(value="/search", method = RequestMethod.GET)
+	public ModelAndView showSearchPage(ModelAndView modelAndView, Search search){
+		modelAndView.addObject("search", search);
+		
+		//Giphy API
+		Map<String, Object> resultMapObj =  httpService.getSearchData(search.getSearchString());
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
+		
+		try {
+			if (resultMapObj != null && resultMapObj.get("data") != null) {
+				ObjectMapper resultOutputMap = new ObjectMapper();
+				String jsonResultOutput = resultOutputMap.writeValueAsString(resultMapObj.get("data"));
+				List<Map<String,Object>> resultObj = resultOutputMap.readValue(jsonResultOutput, List.class);
+				
+				for(Map<String, Object> dataObj : resultObj) {
+					ObjectMapper imageMap = new ObjectMapper();
+					String jsonImageOutput = imageMap.writeValueAsString(dataObj.get("images"));
+					Map<String,Object> imageMapObj = resultOutputMap.readValue(jsonImageOutput, Map.class);
+					String jsonImageFixedOutput = imageMap.writeValueAsString(imageMapObj.get("fixed_height_still"));
+					Map<String,Object> imageFixedObj = resultOutputMap.readValue(jsonImageFixedOutput, Map.class);
+					Map<String, Object> imageGy = new HashMap<String, Object>();
+					imageGy.put("url", imageFixedObj.get("url"));
+					imageGy.put("width", imageFixedObj.get("width"));
+					imageGy.put("height", imageFixedObj.get("height"));
+					imageListObj.add(imageGy);  							
+				}
+			
+			}
+			System.out.println("imageListObj::"+imageListObj);
+			modelAndView.addObject("imageListObj", imageListObj);     
+		} catch (Exception ex) {
+			
+		}
+		modelAndView.setViewName("search");
+		return modelAndView;
+	}
+	
+	
+	// Process form input data
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public ModelAndView processSearchForm(ModelAndView modelAndView, @Valid Search search, BindingResult bindingResult, HttpServletRequest request) {
+		System.out.println("search.getSearchString()::"+search.getSearchString());      
+	    
+		//Giphy API
+		Map<String, Object> resultMapObj =  httpService.getSearchData(search.getSearchString());
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
+		
+		try {
+			if (resultMapObj != null && resultMapObj.get("data") != null) {
+				ObjectMapper resultOutputMap = new ObjectMapper();
+				String jsonResultOutput = resultOutputMap.writeValueAsString(resultMapObj.get("data"));
+				List<Map<String,Object>> resultObj = resultOutputMap.readValue(jsonResultOutput, List.class);
+				
+				for(Map<String, Object> dataObj : resultObj) {
+					ObjectMapper imageMap = new ObjectMapper();
+					String jsonImageOutput = imageMap.writeValueAsString(dataObj.get("images"));
+					Map<String,Object> imageMapObj = resultOutputMap.readValue(jsonImageOutput, Map.class);
+					String jsonImageFixedOutput = imageMap.writeValueAsString(imageMapObj.get("fixed_height_still"));
+					Map<String,Object> imageFixedObj = resultOutputMap.readValue(jsonImageFixedOutput, Map.class);
+					Map<String, Object> imageGy = new HashMap<String, Object>();
+					imageGy.put("url", imageFixedObj.get("url"));
+					imageGy.put("width", imageFixedObj.get("width"));
+					imageGy.put("height", imageFixedObj.get("height"));
+					imageListObj.add(imageGy);  							
+				}
+			
+			}
+			System.out.println("imageListObj::"+imageListObj);
+			modelAndView.addObject("imageListObj", imageListObj);     
+		} catch (Exception ex) {
+			
+		}
+		
+		modelAndView.setViewName("search");
+			
 		return modelAndView;
 	}
 	
