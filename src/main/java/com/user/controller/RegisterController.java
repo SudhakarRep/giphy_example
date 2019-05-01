@@ -13,7 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nulabinc.zxcvbn.Strength;
 import com.nulabinc.zxcvbn.Zxcvbn;
+import com.user.model.Search;
 import com.user.model.User;
 import com.user.service.EmailService;
 import com.user.service.HttpService;
@@ -46,13 +49,50 @@ public class RegisterController {
 		this.emailService = emailService;
 	}
 	
+	  @RequestMapping(value="/loginError")
+	  public String loginError(Model model, String username ){
+	    model.addAttribute("error", "Your username and password is invalid.");
+	    model.addAttribute("username",username);
+	    return "login";
+	  }
+	  
+	  
+	  
+	  @RequestMapping("/403")
+	  public String access(){
+	    return "/access";
+	  }
+	
+	  @RequestMapping("/login")
+	  public String login(Model model, String error, String logout, HttpServletRequest request ){
+	    if (logout != null){
+	      model.addAttribute("logout", "You have been logged out successfully.");
+	    }
+	    return "login";
+	  }
+	  
+	  @RequestMapping(value="/main")
+	  public String main(){
+	    return "main";
+	  }
+	  
+	  @RequestMapping("/admin")
+	  public String admin(){
+	    return "/admin/admin";
+	  }
+	  
+	  @RequestMapping("/user")
+	  public String user(){
+	    return "/user/user";
+	  }
+	
 	// Return registration form template
 	@RequestMapping(value="/register", method = RequestMethod.GET)
 	public ModelAndView showRegistrationPage(ModelAndView modelAndView, User user){
 		modelAndView.addObject("user", user);
 		
 		//Giphy API
-		Map<String, Object> resultMapObj =  httpService.getSearchData();
+		Map<String, Object> resultMapObj =  httpService.getSearchData(null);
 		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
 		
 		try {
@@ -80,11 +120,7 @@ public class RegisterController {
 		} catch (Exception ex) {
 			
 		}
-			 	       
-				
-				
-		
-		
+
 		modelAndView.setViewName("register");
 		return modelAndView;
 	}
@@ -206,7 +242,7 @@ public class RegisterController {
 		System.out.println("ID::"+id);
 		User user = userService.findById(id);
 		//Giphy API
-		Map<String, Object> resultMapObj =  httpService.getSearchData();
+		Map<String, Object> resultMapObj =  httpService.getSearchData(null);
 		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
 		
 		try {
@@ -242,6 +278,95 @@ public class RegisterController {
 		modelAndView.setViewName("edit_user");
 		return modelAndView;
 	}
+	
+	
+	
+	// Return registration form template
+	@RequestMapping(value="/search", method = RequestMethod.GET)
+	public ModelAndView showSearchPage(ModelAndView modelAndView, Search search){
+		modelAndView.addObject("search", search);
+		
+		//Giphy API
+		Map<String, Object> resultMapObj =  httpService.getSearchData(search.getSearchString());
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
+		
+		try {
+			if (resultMapObj != null && resultMapObj.get("data") != null) {
+				ObjectMapper resultOutputMap = new ObjectMapper();
+				String jsonResultOutput = resultOutputMap.writeValueAsString(resultMapObj.get("data"));
+				List<Map<String,Object>> resultObj = resultOutputMap.readValue(jsonResultOutput, List.class);
+				
+				for(Map<String, Object> dataObj : resultObj) {
+					ObjectMapper imageMap = new ObjectMapper();
+					String jsonImageOutput = imageMap.writeValueAsString(dataObj.get("images"));
+					Map<String,Object> imageMapObj = resultOutputMap.readValue(jsonImageOutput, Map.class);
+					String jsonImageFixedOutput = imageMap.writeValueAsString(imageMapObj.get("fixed_height_still"));
+					Map<String,Object> imageFixedObj = resultOutputMap.readValue(jsonImageFixedOutput, Map.class);
+					Map<String, Object> imageGy = new HashMap<String, Object>();
+					imageGy.put("url", imageFixedObj.get("url"));
+					imageGy.put("width", imageFixedObj.get("width"));
+					imageGy.put("height", imageFixedObj.get("height"));
+					imageListObj.add(imageGy);  							
+				}
+			
+			}
+			System.out.println("imageListObj::"+imageListObj);
+			modelAndView.addObject("imageListObj", imageListObj);     
+		} catch (Exception ex) {
+			
+		}
+		modelAndView.setViewName("search");
+		return modelAndView;
+	}
+	
+	
+	// Process form input data
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public ModelAndView processSearchForm(ModelAndView modelAndView, @Valid Search search, BindingResult bindingResult, HttpServletRequest request) {
+		System.out.println("search.getSearchString()::"+search.getSearchString());      
+	    
+		//Giphy API
+		Map<String, Object> resultMapObj =  httpService.getSearchData(search.getSearchString());
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>(); 
+		
+		try {
+			if (resultMapObj != null && resultMapObj.get("data") != null) {
+				ObjectMapper resultOutputMap = new ObjectMapper();
+				String jsonResultOutput = resultOutputMap.writeValueAsString(resultMapObj.get("data"));
+				List<Map<String,Object>> resultObj = resultOutputMap.readValue(jsonResultOutput, List.class);
+				
+				for(Map<String, Object> dataObj : resultObj) {
+					ObjectMapper imageMap = new ObjectMapper();
+					String jsonImageOutput = imageMap.writeValueAsString(dataObj.get("images"));
+					Map<String,Object> imageMapObj = resultOutputMap.readValue(jsonImageOutput, Map.class);
+					String jsonImageFixedOutput = imageMap.writeValueAsString(imageMapObj.get("fixed_height_still"));
+					Map<String,Object> imageFixedObj = resultOutputMap.readValue(jsonImageFixedOutput, Map.class);
+					Map<String, Object> imageGy = new HashMap<String, Object>();
+					imageGy.put("url", imageFixedObj.get("url"));
+					imageGy.put("width", imageFixedObj.get("width"));
+					imageGy.put("height", imageFixedObj.get("height"));
+					imageListObj.add(imageGy);  							
+				}
+			
+			}
+			System.out.println("imageListObj::"+imageListObj);
+			modelAndView.addObject("imageListObj", imageListObj);     
+		} catch (Exception ex) {
+			
+		}
+		
+		modelAndView.setViewName("search");
+			
+		return modelAndView;
+	}
+	
+   
+
+    @GetMapping("/access-denied")
+    public String accessDenied() {
+        return "/error/access-denied";
+    }
+
 	
 	
 }

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+<meta charset="UTF-8" />
+<!-- Bootstrap core CSS -->
+<link
+  href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+  crossorigin="anonymous" />
+
+	<link th:href="@{css/style.css}" rel="stylesheet" />
+<title>Main</title>
+</head>
+<body class="gray-bg">
+
+  <div class="middle-box animated fadeInDown">
+	<span sec:authentication="name"></span>
+	<span sec:authentication="principal.authorities"></span> 
+
+	<div sec:authorize="hasAuthority('ADMIN')">- only admin!!!!</div>
+	<div sec:authorize="hasAuthority('USER')">- only user</div>
+
+	<form th:action="@{/logout}" method="post">
+		<input type="submit" value="Sign Out" />
+	</form>
+	
+	<a th:attr="href=@{/admin}">admin</a> |
+	<a th:attr="href=@{/user}">user</a>
+	</div>
+</body>
+</html>

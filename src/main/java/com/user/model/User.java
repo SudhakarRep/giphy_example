@@ -1,10 +1,16 @@
 package com.user.model;
 
+import java.util.Set;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import org.hibernate.validator.constraints.Email;
@@ -46,6 +52,12 @@ public class User {
 	
 	@Column(name = "confirmation_token")
 	private String confirmationToken;
+	
+	  @ManyToMany(cascade=CascadeType.ALL)
+	  @JoinTable(name = "user_role",
+	             joinColumns = @JoinColumn(name = "user_id"),
+	             inverseJoinColumns = @JoinColumn(name = "role_id"))
+	  private Set<Role> roles;
 
 	
 	public String getConfirmationToken() {
@@ -113,5 +125,12 @@ public class User {
 		this.imageUrl = imageUrl;
 	}
 
+	public Set<Role> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
 
 }
