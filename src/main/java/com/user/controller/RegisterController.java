@@ -1,5 +1,6 @@
 package com.user.controller;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,10 +27,14 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nulabinc.zxcvbn.Strength;
 import com.nulabinc.zxcvbn.Zxcvbn;
+import com.user.model.Category;
 import com.user.model.Search;
 import com.user.model.User;
+import com.user.model.UserGiphy;
+import com.user.service.CategoryService;
 import com.user.service.EmailService;
 import com.user.service.HttpService;
+import com.user.service.UserGiphyService;
 import com.user.service.UserService;
 
 @Controller
@@ -39,7 +45,13 @@ public class RegisterController {
 	private EmailService emailService;
 	
 	@Autowired
+	private CategoryService categoryService;
+	
+	@Autowired
 	private HttpService httpService;
+	
+	@Autowired
+	private UserGiphyService userGiphySerivce;
 	
 	@Autowired
 	public RegisterController(BCryptPasswordEncoder bCryptPasswordEncoder,
@@ -47,6 +59,7 @@ public class RegisterController {
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
 		this.userService = userService;
 		this.emailService = emailService;
+		
 	}
 	
 	  @RequestMapping(value="/loginError")
@@ -85,7 +98,64 @@ public class RegisterController {
 	  public String user(){
 	    return "/user/user";
 	  }
-	
+	  	  
+		// Return registration form template
+		@GetMapping(value="/user/giphy/add")
+		public ModelAndView showGiphyAdd(ModelAndView modelAndView, UserGiphy userGiphy){
+			modelAndView.addObject("userGiphy", userGiphy);			
+			List<Category> categories = categoryService.findAll();
+			modelAndView.addObject("categories", categories);			
+			List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>();
+			modelAndView.addObject("imageListObj", imageListObj);  
+			modelAndView.addObject("errorMessage", "");
+			modelAndView.setViewName("/user/user_giphy_add");			
+			return modelAndView;
+		}
+
+		// Return registration form template
+		@PostMapping(value="/user/giphy/add", params="searchImg")
+		public ModelAndView showGiphyAddSearchImg(ModelAndView modelAndView, UserGiphy userGiphy){			
+			return userService.userGiphyAddAPI(modelAndView, userGiphy);
+		}
+
+		// Return registration form template
+		@PostMapping(value="/user/giphy/add",params="saveImage")
+		public ModelAndView showGiphyAddPost(ModelAndView modelAndView, UserGiphy userGiphy, HttpServletRequest request){			
+			return userService.userGiphySaveAndList(modelAndView, userGiphy, request);
+		}
+
+		// Return registration form template
+		@GetMapping(value="/user/giphy/list")
+		public ModelAndView showGiphyList(ModelAndView modelAndView, UserGiphy userGiphy, HttpServletRequest request){
+			modelAndView.addObject("userGiphy", userGiphy);
+			modelAndView.addObject("errorMessage", "");
+			
+			Principal principal = request.getUserPrincipal();
+			User user = userService.findByEmail(principal.getName());
+			userGiphy.setUserId(user.getId());
+			
+			List<UserGiphy> userGiphyListObj = userGiphySerivce.findByUserId(user.getId());
+			List<Map<String, Object>> userGiphyList = new ArrayList<Map<String, Object>>();
+			int inc = 0;
+			for (UserGiphy userGiphyObj : userGiphyListObj) {
+				inc=inc+1;
+				Map<String, Object> userGiphyMap = new HashMap<String, Object>();
+				userGiphyMap.put("searchString", userGiphyObj.getSearchString());
+				userGiphyMap.put("giphyUrl", userGiphyObj.getGiphyUrl());
+				userGiphyMap.put("id", userGiphyObj.getId());
+
+				Category category = categoryService.findById(userGiphyObj.getCategoryId());
+				userGiphyMap.put("categoryName", category.getName());
+				userGiphyMap.put("slNo", inc);		
+				userGiphyList.add(userGiphyMap);
+			}
+			modelAndView.addObject("userGiphyList", userGiphyList);
+						
+			modelAndView.setViewName("/user/user_giphy_list");
+			return modelAndView;
+		}
+
+		
 	// Return registration form template
 	@RequestMapping(value="/register", method = RequestMethod.GET)
 	public ModelAndView showRegistrationPage(ModelAndView modelAndView, User user){

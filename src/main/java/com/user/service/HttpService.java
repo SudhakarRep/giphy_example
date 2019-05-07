@@ -1,5 +1,8 @@
 package com.user.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpHost;
@@ -85,5 +88,37 @@ public class HttpService {
 		}
 		return null;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public  List<Map<String,Object>> getImageProperties(String searchString) {
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>();
+		Map<String, Object> resultMapObj = new HashMap<String, Object>();
+		resultMapObj =  this.getSearchData(searchString);
+		try {
+			if (resultMapObj != null && resultMapObj.get("data") != null) {
+				ObjectMapper resultOutputMap = new ObjectMapper();
+				String jsonResultOutput = resultOutputMap.writeValueAsString(resultMapObj.get("data"));
+				List<Map<String,Object>> resultObj = resultOutputMap.readValue(jsonResultOutput, List.class);
+				
+				for(Map<String, Object> dataObj : resultObj) {
+					ObjectMapper imageMap = new ObjectMapper();
+					String jsonImageOutput = imageMap.writeValueAsString(dataObj.get("images"));
+					Map<String,Object> imageMapObj = resultOutputMap.readValue(jsonImageOutput, Map.class);
+					String jsonImageFixedOutput = imageMap.writeValueAsString(imageMapObj.get("fixed_height_still"));
+					Map<String,Object> imageFixedObj = resultOutputMap.readValue(jsonImageFixedOutput, Map.class);
+					Map<String, Object> imageGy = new HashMap<String, Object>();
+					imageGy.put("url", imageFixedObj.get("url"));
+					imageGy.put("width", imageFixedObj.get("width"));
+					imageGy.put("height", imageFixedObj.get("height"));
+					imageListObj.add(imageGy);  							
+				}						
+			}
+	
+		} catch (Exception ex) {
+			
+		}
+		return imageListObj;
+	}
+	
 	
 }

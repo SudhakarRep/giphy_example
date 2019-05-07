@@ -18,9 +18,16 @@
 <body class="gray-bg">
 
   <div class="middle-box text-left animated fadeInDown">
+  	<form th:action="@{/logout}" method="post">
+		<input type="submit" value="Sign Out" />
+	</form>
+	
     <span sec:authentication="name"></span>
     <span sec:authentication="principal.authorities"></span>
-    only user!
+    <div sec:authorize="hasAuthority('USER')">- only user</div>
+    <a th:attr="href=@{/user/giphy/add}">Add Giphy</a> | 
+    <a th:attr="href=@{/user/giphy/list}">List Giphies</a>
     </div>
+      	
 </body>
 </html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" />
+
+<!-- Bootstrap core CSS -->
+<link
+  href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+  crossorigin="anonymous" />
+
+	<link th:href="@{../../css/style.css}" rel="stylesheet" />
+
+<title>Add Giphy</title>
+</head>
+
+<body class="gray-bg">
+
+  <div class="middle-box text-left animated fadeInDown">
+  	<form th:action="@{/logout}" method="post">
+		<input type="submit" value="Sign Out" />
+	</form>
+	
+    <span sec:authentication="name"></span>
+    <span sec:authentication="principal.authorities"></span>
+    <div sec:authorize="hasAuthority('USER')">- only user</div>
+    
+    <a th:attr="href=@{/user/giphy/list}">List Giphies</a> |
+    <a th:attr="href=@{/user}">Home</a>
+   <div class="middle-box text-center loginscreen animated fadeInDown">
+    <div>
+      
+      <hr />
+
+      <h4>Search Images</h4>
+
+      <form autocomplete="off" action="#" th:action="@{/user/giphy/add}"
+        th:object="${userGiphy}" method="post" class="m-t" role="form"
+        data-toggle="validator">
+
+       <div class="form-group input-group has-feedback">
+<table>
+            <tr>
+                <td>Select Category:</td>
+                <td>
+                   <select th:field="*{categoryId}">
+                         <option th:each="cat : ${categories}"
+                            th:value="${{cat?.id}}"
+                            th:text="${cat?.name}"/>
+                  </select>
+ 
+                </td>
+            </tr>         
+        </table>
+</div>
+ 
+
+        <div th:if="${#fields.hasErrors('searchString')}" th:errors="*{searchString}"
+          class="validation-message alert alert-danger" role="alert"></div>
+
+        <div class="form-group input-group has-feedback">
+          <label th:if="${#fields.hasErrors('SearchString')}"
+            th:errors="*{searchString}" class="validation-message"></label>
+          <span class="input-group-addon">
+            <span class="glyphicon glyphicon-user"></span>
+          </span>
+          
+          <input type="text" th:field="*{searchString}"
+            placeholder="Search String" class="form-control" required />
+          <span class="glyphicon form-control-feedback"
+            aria-hidden="true"></span>
+             
+        </div>
+        
+        
+        <div><button type="submit"
+          class="btn btn-primary block full-width m-b" name="searchImg">Search</button></div>
+
+
+
+
+        
+        <div  style="overflow-x:scroll; white-space: nowrap;height:300px;width:400px" >
+        	<table id="myTableId" dt:table="true" width="50%" border="2">
+        <thead>
+            <tr>
+                <th align="left">Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="gyimage : ${imageListObj}">
+                <td align="left" ><input type="radio" id="img" th:field="*{giphyUrl}" name="img[]" th:value="${gyimage?.url}" /> <img th:src="${gyimage?.url}" th:width="${gyimage?.width}" th:height="${gyimage?.height}" > </td>
+            </tr>
+        </tbody>
+    </table>
+        </div>
+
+        <button type="submit"
+          class="btn btn-primary block full-width m-b" name="saveImage">Save Image</button>
+
+      </form>
+       <p class="m-t">
+      
+      </p>
+    </div>
+  </div>
+
+
+  <!-- jQuery-->
+  <script
+    src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+  <!-- Bootstrap -->
+  <script
+    src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+
+  <!-- Bootstrap Validator plugin -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
+
+ 
+  
+  
+  
+  
+    
+    
+    </div>
+    
+    
+</body>
+</html>
