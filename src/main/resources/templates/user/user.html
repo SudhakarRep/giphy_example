@@ -26,7 +26,10 @@
     <span sec:authentication="principal.authorities"></span>
     <div sec:authorize="hasAuthority('USER')">- only user</div>
     <a th:attr="href=@{/user/giphy/add}">Add Giphy</a> | 
-    <a th:attr="href=@{/user/giphy/list}">List Giphies</a>
+    <a th:attr="href=@{/user/giphy/list}">List Giphies</a> | 
+    <a th:attr="href=@{/user/category/add}">Add Category</a> | 
+    <a th:attr="href=@{/user/categories}">List Categories</a>
+    
     </div>
       	
 </body>

@@ -31,7 +31,7 @@ public class UserService {
 	
 	@Autowired
 	private UserGiphyService userGiphySerivce;
-
+	
 	@Autowired
 	public UserService(UserRepository userRepository) {
 		this.userRepository = userRepository;
@@ -103,6 +103,66 @@ public class UserService {
 		}
 		modelAndView.addObject("userGiphyList", userGiphyList);					
 		modelAndView.setViewName("/user/user_giphy_list");
+		return modelAndView;
+	}
+
+	public ModelAndView userCategoryAddAPI(ModelAndView modelAndView, Category category) {
+		modelAndView.addObject("category", category);
+		modelAndView.setViewName("/user/user_category_add");
+		return modelAndView;
+	}
+
+	public ModelAndView userCategorySave(ModelAndView modelAndView, Category category, HttpServletRequest request) {
+		
+		Principal principal = request.getUserPrincipal();
+		User user = this.findByEmail(principal.getName());
+		category.setUserId(user.getId());
+		System.out.println("userCategory::"+category);
+		Category categoryExisting = categoryService.findByUserIdAndName(user.getId(), category.getName());
+		
+		if (categoryExisting == null) {
+			categoryService.saveCategory(category);
+			modelAndView.addObject("errorMessage", "Saved successfully");
+			
+			List<Category> categoryListObj = categoryService.findByUserId(user.getId());
+			modelAndView.addObject("userCategoryList", categoryListObj);	
+			
+			modelAndView.setViewName("/user/user_category_list");
+		} else {
+			modelAndView.addObject("errorMessage", "Category already exist");
+			modelAndView.setViewName("/user/user_category_add");
+		}
+		
+		return modelAndView;
+	}
+
+	public ModelAndView userCategoryList(ModelAndView modelAndView, Category category, HttpServletRequest request) {
+		
+		modelAndView.addObject("category", category);
+		
+		Principal principal = request.getUserPrincipal();
+		User user = this.findByEmail(principal.getName());
+		category.setUserId(user.getId());
+		
+		List<Category> userCategoryListObj = categoryService.findByUserId(user.getId());
+		modelAndView.addObject("userCategoryList", userCategoryListObj);	
+		
+		modelAndView.setViewName("/user/user_category_list");
+		return modelAndView;
+	}
+
+	public ModelAndView userrGiphyAdd(ModelAndView modelAndView, UserGiphy userGiphy, HttpServletRequest request) {
+		Principal principal = request.getUserPrincipal();
+		User user = this.findByEmail(principal.getName());
+				
+		modelAndView.addObject("userGiphy", userGiphy);			
+		List<Category> categories = categoryService.findByUserId(user.getId());
+		modelAndView.addObject("categories", categories);			
+		List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>();
+		modelAndView.addObject("imageListObj", imageListObj);  
+		modelAndView.addObject("errorMessage", "");
+		modelAndView.setViewName("/user/user_giphy_add");	
+		
 		return modelAndView;
 	}
 

@@ -101,15 +101,8 @@ public class RegisterController {
 	  	  
 		// Return registration form template
 		@GetMapping(value="/user/giphy/add")
-		public ModelAndView showGiphyAdd(ModelAndView modelAndView, UserGiphy userGiphy){
-			modelAndView.addObject("userGiphy", userGiphy);			
-			List<Category> categories = categoryService.findAll();
-			modelAndView.addObject("categories", categories);			
-			List<Map<String,Object>> imageListObj = new ArrayList<Map<String,Object>>();
-			modelAndView.addObject("imageListObj", imageListObj);  
-			modelAndView.addObject("errorMessage", "");
-			modelAndView.setViewName("/user/user_giphy_add");			
-			return modelAndView;
+		public ModelAndView showGiphyAdd(ModelAndView modelAndView, UserGiphy userGiphy,HttpServletRequest request){								
+			return userService.userrGiphyAdd(modelAndView, userGiphy, request);
 		}
 
 		// Return registration form template
@@ -118,6 +111,25 @@ public class RegisterController {
 			return userService.userGiphyAddAPI(modelAndView, userGiphy);
 		}
 
+		// Return registration form template
+		@GetMapping(value="/user/category/add")
+		public ModelAndView addUserCategory(ModelAndView modelAndView, Category category){			
+			return userService.userCategoryAddAPI(modelAndView, category);
+		}
+
+		// Return registration form template
+		@PostMapping(value="/user/category/add")
+		public ModelAndView saveUserCategory(ModelAndView modelAndView, Category category,HttpServletRequest request){	
+			System.out.println("userCategory::"+category.toString());
+			return userService.userCategorySave(modelAndView, category, request);
+		}
+		
+		// Return registration form template
+		@GetMapping(value="/user/categories")
+		public ModelAndView userCategoryList(ModelAndView modelAndView, Category category,HttpServletRequest request){			
+			return userService.userCategoryList(modelAndView, category, request);
+		}
+		
 		// Return registration form template
 		@PostMapping(value="/user/giphy/add",params="saveImage")
 		public ModelAndView showGiphyAddPost(ModelAndView modelAndView, UserGiphy userGiphy, HttpServletRequest request){			

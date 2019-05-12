@@ -23,7 +23,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.user.model.Category;
 import com.user.model.User;
+import com.user.model.UserGiphy;
 import com.user.service.CategoryService;
+import com.user.service.UserGiphyService;
 import com.user.service.UserService;
 
 @RunWith(SpringRunner.class)
@@ -41,6 +43,9 @@ public class UserServiceTest {
 	
 	@Autowired
 	UserService userService;
+	
+	@Autowired
+	UserGiphyService userGiphyService;
 		
 	@Test
 	@WithMockUser(roles = "USER")
@@ -55,8 +60,8 @@ public class UserServiceTest {
 	
 	@Test
 	public void loginUrlIsWorking() throws Exception {
-		String basicDigestHeaderValue = "Basic " + new String(Base64.encodeBase64(("<username>:<password>").getBytes()));
-		this.mockMvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/login").header("Authorization", basicDigestHeaderValue).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());	
+		//String basicDigestHeaderValue = "Basic " + new String(Base64.encodeBase64(("<username>:<password>").getBytes()));
+		this.mockMvc.perform(MockMvcRequestBuilders.get("http://localhost:8080/login").header("Authorization", "").accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk());	
 	}
 
 	@Test
@@ -76,4 +81,28 @@ public class UserServiceTest {
 		User user = userService.findByEmail("aman@gmail.com");
 		Assert.assertNotNull(user);
 	}
+	
+	@Test
+	public void isUserHasCategories() {
+		User user = userService.findByEmail("aman@gmail.com");
+		List<Category> category = categoryService.findByUserId(user.getId());
+		Assert.assertNotNull(category);
+	}
+	
+	
+	@Test
+	public void isUserCategoryExist() {
+		User user = userService.findByEmail("aman@gmail.com");
+		Category category = categoryService.findByUserIdAndName(user.getId(), "funny");
+		Assert.assertNotNull(category);
+	}
+	
+	@Test
+	public void isUserHasGiphies() {
+		User user = userService.findByEmail("aman@gmail.com");
+		List<UserGiphy> userGiphy = userGiphyService.findByUserId(user.getId());
+		Assert.assertNotNull(userGiphy);
+	}
+	
+	
 }

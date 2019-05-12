@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+   xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+<meta charset="UTF-8"/>
+
+<!-- Bootstrap core CSS -->
+<link
+  href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+  rel="stylesheet"
+  integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+  crossorigin="anonymous" />
+
+	<link th:href="@{../../css/style.css}" rel="stylesheet" />
+
+<title>Category List</title>
+</head>
+<body class="gray-bg">
+
+  <div class="middle-box text-left animated fadeInDown">
+  	<form th:action="@{/logout}" method="post">
+		<input type="submit" value="Sign Out" />
+	</form>
+    <span sec:authentication="name"></span>
+    <span sec:authentication="principal.authorities"></span>
+    only user!
+    
+
+      <hr />
+
+      <h4>List user categories</h4>
+       <p class="m-t">
+       <a th:href="@{category/add}"  >Add Category</a> |
+       <a th:attr="href=@{/user}">Home</a>
+      </p>
+      <p class="m-t"><span th:text="${errorMessage}" ></span></p>
+      
+ <table id="myTableId" dt:table="true" width="700px" border="2">
+        <thead>
+            <tr>
+                <th align="left">Slno.</th>
+                <th align="left">Category Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="userCategory : ${userCategoryList}">
+                <td align="left" ><span th:text="${userCategory?.id}" ></span></td>
+                <td align="left" th:text="${userCategory?.name}"></td>
+                
+            </tr>
+        </tbody>
+    </table>
+      
+      
+      
+
+    </div>
+  </div>
+
+
+  <!-- jQuery-->
+  <script
+    src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+  <!-- Bootstrap -->
+  <script
+    src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+    integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+
+  <!-- Bootstrap Validator plugin -->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/1000hz-bootstrap-validator/0.11.9/validator.min.js"></script>
+
+ 
+  
+  
+  
+  
+    
+    
+    </div>
+    
+    
+</body>
+</html>

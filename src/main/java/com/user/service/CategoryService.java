@@ -26,6 +26,13 @@ public class CategoryService {
 		return categoryRepository.findOne(id);
 	}
 	
+	public List<Category> findByUserId(int userId) {
+		return categoryRepository.findByUserId(userId);
+	}
+	
+	public Category findByUserIdAndName(int userId, String name) {
+		return categoryRepository.findByUserIdAndName(userId, name);
+	}
 	
 	public void saveCategory(Category category) {
 		categoryRepository.save(category);
